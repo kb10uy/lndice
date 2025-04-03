@@ -1,11 +1,15 @@
 use chumsky::prelude::*;
 
-use crate::types::{QueryKind, RangeQuery, ReplayDice, ReplayDiceElement};
-
-use super::expression::{int, query_kind, range_query};
+use crate::{
+    parser::{
+        dice::dice_element,
+        expression::{int, query_kind, range_query},
+    },
+    types::{QueryKind, RangeQuery, ReplayDice},
+};
 
 pub(super) fn replay_dice<'a>() -> impl Parser<'a, &'a str, ReplayDice, extra::Err<Rich<'a, char>>> {
-    (replay_dice_element().separated_by(just('+')).collect())
+    (dice_element('R').separated_by(just('+')).collect())
         .then(surrounded_replay().or_not())
         .then(range_query().or_not())
         .try_map(|((elements, replay), target), span| {
@@ -23,13 +27,6 @@ pub(super) fn replay_dice<'a>() -> impl Parser<'a, &'a str, ReplayDice, extra::E
         })
 }
 
-fn replay_dice_element<'a>() -> impl Parser<'a, &'a str, ReplayDiceElement, extra::Err<Rich<'a, char>>> {
-    int()
-        .then_ignore(one_of("R"))
-        .then(int())
-        .map(|(rolls, faces)| ReplayDiceElement { rolls, faces })
-}
-
 fn surrounded_replay<'a>() -> impl Parser<'a, &'a str, (Option<QueryKind>, usize), extra::Err<Rich<'a, char>>> {
     query_kind().or_not().then(int()).delimited_by(just('['), just(']'))
 }
@@ -39,7 +36,7 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::{QueryKind, RangeQuery, ReplayDice, ReplayDiceElement};
+    use crate::types::{DiceElement, QueryKind, RangeQuery, ReplayDice};
 
     use super::replay_dice;
 
@@ -49,10 +46,7 @@ mod test {
         assert_eq!(
             parser.parse("2R6+1R10[>3]>=5").into_result(),
             Ok(ReplayDice {
-                elements: vec![
-                    ReplayDiceElement { rolls: 2, faces: 6 },
-                    ReplayDiceElement { rolls: 1, faces: 10 },
-                ],
+                elements: vec![DiceElement { rolls: 2, faces: 6 }, DiceElement { rolls: 1, faces: 10 },],
                 replay_query: Some(RangeQuery {
                     kind: QueryKind::Greater,
                     value: 3

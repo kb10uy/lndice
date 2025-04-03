@@ -1,13 +1,20 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum DiceRoll {
+pub enum DiceCommand {
     Sum(SumDice),
     Individual(IndividualDice),
+    Replay(ReplayDice),
+    Infinite(InfiniteDice),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DiceElement {
+    pub rolls: usize,
+    pub faces: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SumDice {
-    pub rolls: usize,
-    pub faces: usize,
+    pub element: DiceElement,
     pub pick: Option<SumDicePick>,
 }
 
@@ -20,10 +27,7 @@ pub enum SumDicePick {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IndividualDice {
-    pub rolls: usize,
-    pub faces: usize,
-}
+pub struct IndividualDice(pub DiceElement);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RangeQuery {
@@ -43,13 +47,20 @@ pub enum QueryKind {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ReplayDice {
-    pub elements: Vec<ReplayDiceElement>,
+    pub elements: Vec<DiceElement>,
     pub replay_query: Option<RangeQuery>,
     pub target_query: Option<RangeQuery>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ReplayDiceElement {
-    pub rolls: usize,
-    pub faces: usize,
+pub struct InfiniteDice {
+    pub elements: Vec<DiceElement>,
+    pub threshold: Option<usize>,
+    pub bias: Option<usize>,
+    pub target_query: Option<RangeQuery>,
+}
+
+pub struct TallyDice {
+    pub element: DiceElement,
+    pub with_zero: bool,
 }

@@ -1,14 +1,9 @@
 use chumsky::prelude::*;
 
-use crate::types::IndividualDice;
-
-use super::expression::int;
+use crate::{parser::dice::dice_element, types::IndividualDice};
 
 pub(super) fn individual_dice<'a>() -> impl Parser<'a, &'a str, IndividualDice, extra::Err<Rich<'a, char>>> {
-    int()
-        .then_ignore(just('B'))
-        .then(int())
-        .map(|(rolls, faces)| IndividualDice { rolls, faces })
+    dice_element('B').map(IndividualDice)
 }
 
 #[cfg(test)]
@@ -16,7 +11,7 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::IndividualDice;
+    use crate::types::{DiceElement, IndividualDice};
 
     use super::individual_dice;
 
@@ -25,7 +20,7 @@ mod test {
         let parser = individual_dice();
         assert_eq!(
             parser.parse("2B6").into_result(),
-            Ok(IndividualDice { rolls: 2, faces: 6 })
+            Ok(IndividualDice(DiceElement { rolls: 2, faces: 6 }))
         );
     }
 }
