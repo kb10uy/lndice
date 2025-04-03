@@ -4,6 +4,7 @@ pub enum DiceCommand {
     Individual(IndividualDice),
     Replay(ReplayDice),
     Infinite(InfiniteDice),
+    Tally(TallyDice),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -60,6 +61,7 @@ pub struct InfiniteDice {
     pub target_query: Option<RangeQuery>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TallyDice {
     pub element: DiceElement,
     pub with_zero: bool,
