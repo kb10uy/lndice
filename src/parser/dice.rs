@@ -24,8 +24,8 @@ pub(super) fn dice_command<'a>() -> impl Parser<'a, &'a str, DiceCommand, extra:
 }
 
 fn dice_element<'a>(symbol: char) -> impl Parser<'a, &'a str, DiceElement, extra::Err<Rich<'a, char>>> {
-    int()
+    (int().labelled("dice rolls"))
         .then_ignore(just(symbol))
-        .then(int())
+        .then(int().labelled("dice faces"))
         .map(|(rolls, faces)| DiceElement { rolls, faces })
 }

@@ -6,10 +6,10 @@ use crate::{
 };
 
 pub(super) fn tally_dice<'a>() -> impl Parser<'a, &'a str, TallyDice, extra::Err<Rich<'a, char>>> {
-    int()
+    (int().labelled("dice rolls"))
         .then_ignore(just('T'))
-        .then(one_of("YZ"))
-        .then(int())
+        .then(one_of("YZ").labelled("tally specifier"))
+        .then(int().labelled("dice faces"))
         .map(|((rolls, tally), faces)| TallyDice {
             element: DiceElement { rolls, faces },
             with_zero: tally == 'Z',

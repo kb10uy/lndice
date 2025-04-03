@@ -9,10 +9,22 @@ use crate::{
 };
 
 pub(super) fn infinite_dice<'a>() -> impl Parser<'a, &'a str, InfiniteDice, extra::Err<Rich<'a, char>>> {
-    (dice_element('U').separated_by(just('+')).collect())
-        .then(surrounded_threshold().or_not())
-        .then(just('+').then(int()).map(|(_, v)| v).or_not())
-        .then(range_query().or_not())
+    let elements = dice_element('U')
+        .separated_by(just('+'))
+        .collect()
+        .labelled("dice roll elements");
+    let threshold = surrounded_threshold().labelled("infinite roll threshold").or_not();
+    let bias = just('+')
+        .then(int())
+        .map(|(_, v)| v)
+        .labelled("infinite roll bias")
+        .or_not();
+    let query = range_query().labelled("query").or_not();
+
+    elements
+        .then(threshold)
+        .then(bias)
+        .then(query)
         .map(|(((elements, threshold), bias), target_query)| InfiniteDice {
             elements,
             threshold,

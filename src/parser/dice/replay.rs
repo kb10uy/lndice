@@ -9,9 +9,16 @@ use crate::{
 };
 
 pub(super) fn replay_dice<'a>() -> impl Parser<'a, &'a str, ReplayDice, extra::Err<Rich<'a, char>>> {
-    (dice_element('R').separated_by(just('+')).collect())
-        .then(surrounded_replay().or_not())
-        .then(range_query().or_not())
+    let elements = dice_element('R')
+        .separated_by(just('+'))
+        .collect()
+        .labelled("dice roll elements");
+    let replay = surrounded_replay().labelled("replay condition").or_not();
+    let query = range_query().labelled("query").or_not();
+
+    elements
+        .then(replay)
+        .then(query)
         .try_map(|((elements, replay), target), span| {
             let (replay_query, target_query) = match (replay, target) {
                 (None, q) => (q.clone(), q),

@@ -7,7 +7,7 @@ use crate::{
 
 pub(super) fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice, extra::Err<Rich<'a, char>>> {
     dice_element('D')
-        .then(sum_dice_pick().or_not())
+        .then(sum_dice_pick().labelled("sum pick specifier").or_not())
         .map(|(element, pick)| SumDice { element, pick })
 }
 
