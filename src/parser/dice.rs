@@ -3,6 +3,7 @@ mod infinite;
 mod replay;
 mod sum;
 mod tally;
+mod two_six;
 
 use chumsky::prelude::*;
 
@@ -18,6 +19,7 @@ pub(super) fn dice_command<'a>() -> impl Parser<'a, &'a str, DiceCommand, extra:
         replay::replay_dice().map(DiceCommand::Replay),
         infinite::infinite_dice().map(DiceCommand::Infinite),
         tally::tally_dice().map(DiceCommand::Tally),
+        two_six::two_six_dice().map(DiceCommand::TwoSix),
     ))
 }
 

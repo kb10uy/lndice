@@ -5,6 +5,7 @@ pub enum DiceCommand {
     Replay(ReplayDice),
     Infinite(InfiniteDice),
     Tally(TallyDice),
+    TwoSix(TwoSixDice),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -65,4 +66,12 @@ pub struct InfiniteDice {
 pub struct TallyDice {
     pub element: DiceElement,
     pub with_zero: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum TwoSixDice {
+    Unspecified,
+    Ascending,
+    Descending,
+    Keep,
 }
