@@ -4,15 +4,15 @@ use crate::types::{SumDice, SumDicePick};
 
 use super::expression::int;
 
-pub(super) fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice> {
+pub(super) fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice, extra::Err<Rich<'a, char>>> {
     int()
-        .then_ignore(one_of("D"))
+        .then_ignore(just('D'))
         .then(int())
         .then(sum_dice_pick().or_not())
         .map(|((rolls, faces), pick)| SumDice { rolls, faces, pick })
 }
 
-fn sum_dice_pick<'a>() -> impl Parser<'a, &'a str, SumDicePick> {
+fn sum_dice_pick<'a>() -> impl Parser<'a, &'a str, SumDicePick, extra::Err<Rich<'a, char>>> {
     let kh = just("KH").then(int()).map(|(_, v)| SumDicePick::KeepHighest(v));
     let kl = just("KL").then(int()).map(|(_, v)| SumDicePick::KeepLowest(v));
     let dh = just("DH").then(int()).map(|(_, v)| SumDicePick::DropHighest(v));
