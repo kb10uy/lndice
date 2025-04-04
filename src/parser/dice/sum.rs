@@ -31,21 +31,21 @@ fn sum_dice_expr<'a>() -> impl Parser<'a, &'a str, SumDiceExpr, extra::Err<Rich<
         .or(expr.delimited_by(just('('), just(')')));
 
         term.pratt((
-            infix(left(3), just('*'), |x, _, y, _| {
+            infix(left(4), just('*'), |x, _, y, _| {
                 SumDiceExpr::Multiply(Box::new(x), Box::new(y))
             }),
-            infix(left(3), just('/'), |x, _, y, _| {
+            infix(left(4), just('/'), |x, _, y, _| {
                 SumDiceExpr::Divide(Box::new(x), Box::new(y), None)
+            }),
+            postfix(3, fraction_mode(), |expr, f, _| match expr {
+                SumDiceExpr::Divide(x, y, _) => SumDiceExpr::Divide(x, y, Some(f)),
+                _ => expr,
             }),
             infix(left(2), just('+'), |x, _, y, _| {
                 SumDiceExpr::Add(Box::new(x), Box::new(y))
             }),
             infix(left(2), just('-'), |x, _, y, _| {
                 SumDiceExpr::Subtract(Box::new(x), Box::new(y))
-            }),
-            postfix(1, fraction_mode(), |expr, f, _| match expr {
-                SumDiceExpr::Divide(x, y, _) => SumDiceExpr::Divide(x, y, Some(f)),
-                _ => expr,
             }),
         ))
     })

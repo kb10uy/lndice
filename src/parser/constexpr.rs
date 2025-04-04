@@ -13,21 +13,21 @@ pub(super) fn expr<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<
     recursive(|expr| {
         let term = int().or(expr.delimited_by(just('('), just(')')));
         term.pratt((
-            infix(left(3), just('*'), |x, _, y, _| {
+            infix(left(4), just('*'), |x, _, y, _| {
                 ConstExpr::Multiply(Box::new(x), Box::new(y))
             }),
-            infix(left(3), just('/'), |x, _, y, _| {
+            infix(left(4), just('/'), |x, _, y, _| {
                 ConstExpr::Divide(Box::new(x), Box::new(y), None)
+            }),
+            postfix(3, fraction_mode(), |expr, f, _| match expr {
+                ConstExpr::Divide(x, y, _) => ConstExpr::Divide(x, y, Some(f)),
+                _ => expr,
             }),
             infix(left(2), just('+'), |x, _, y, _| {
                 ConstExpr::Add(Box::new(x), Box::new(y))
             }),
             infix(left(2), just('-'), |x, _, y, _| {
                 ConstExpr::Subtract(Box::new(x), Box::new(y))
-            }),
-            postfix(1, fraction_mode(), |expr, f, _| match expr {
-                ConstExpr::Divide(x, y, _) => ConstExpr::Divide(x, y, Some(f)),
-                _ => expr,
             }),
         ))
     })

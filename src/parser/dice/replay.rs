@@ -39,7 +39,8 @@ pub fn replay_dice<'a>() -> impl Parser<'a, &'a str, ReplayDice, extra::Err<Rich
         })
 }
 
-fn surrounded_replay<'a>() -> impl Parser<'a, &'a str, (Option<QueryKind>, ConstExpr), extra::Err<Rich<'a, char>>> + Clone {
+fn surrounded_replay<'a>()
+-> impl Parser<'a, &'a str, (Option<QueryKind>, ConstExpr), extra::Err<Rich<'a, char>>> + Clone {
     query_kind().or_not().then(expr()).delimited_by(just('['), just(']'))
 }
 

@@ -3,7 +3,6 @@ use crate::types::{
     query::RangeQuery,
 };
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DiceElement {
     pub rolls: ConstExpr,
