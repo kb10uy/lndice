@@ -9,6 +9,9 @@ crate-type = ["lib", "cdylib"]
 [[example]]
 name = "parser"
 
+[features]
+ffi = []
+
 [dependencies]
 chumsky = { version = "0.10.0", features = ["pratt"] }
 
