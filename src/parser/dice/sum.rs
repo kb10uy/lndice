@@ -1,17 +1,70 @@
-use chumsky::prelude::*;
+use chumsky::{
+    pratt::{infix, left, postfix},
+    prelude::*,
+};
 
 use crate::{
-    parser::{constexpr::term, dice::dice_element},
-    types::dice::{SumDice, SumDicePick},
+    parser::{
+        constexpr::{fraction_mode, term},
+        dice::dice_element,
+        query::range_query,
+    },
+    types::dice::{SumDice, SumDiceElement, SumDiceExpr, SumDicePick},
 };
 
 pub(super) fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice, extra::Err<Rich<'a, char>>> {
-    dice_element('D')
-        .then(sum_dice_pick().labelled("sum pick specifier").or_not())
-        .map(|(element, pick)| SumDice { element, pick })
+    let elements = sum_dice_expr().labelled("sum dice expression");
+    let query = range_query().labelled("query").or_not();
+
+    elements.then(query).map(|(elements, target_query)| SumDice {
+        expression: elements,
+        target_query,
+    })
 }
 
-fn sum_dice_pick<'a>() -> impl Parser<'a, &'a str, SumDicePick, extra::Err<Rich<'a, char>>> {
+fn sum_dice_expr<'a>() -> impl Parser<'a, &'a str, SumDiceExpr, extra::Err<Rich<'a, char>>> {
+    recursive(|expr| {
+        let term = (sum_dice_element()
+            .map(SumDiceExpr::Element)
+            .labelled("sum dice element"))
+        .or(sum_dice_int())
+        .or(expr.delimited_by(just('('), just(')')));
+
+        term.pratt((
+            infix(left(3), just('*'), |x, _, y, _| {
+                SumDiceExpr::Multiply(Box::new(x), Box::new(y))
+            }),
+            infix(left(3), just('/'), |x, _, y, _| {
+                SumDiceExpr::Divide(Box::new(x), Box::new(y), None)
+            }),
+            infix(left(2), just('+'), |x, _, y, _| {
+                SumDiceExpr::Add(Box::new(x), Box::new(y))
+            }),
+            infix(left(2), just('-'), |x, _, y, _| {
+                SumDiceExpr::Subtract(Box::new(x), Box::new(y))
+            }),
+            postfix(1, fraction_mode(), |expr, f, _| match expr {
+                SumDiceExpr::Divide(x, y, _) => SumDiceExpr::Divide(x, y, Some(f)),
+                _ => expr,
+            }),
+        ))
+    })
+}
+
+fn sum_dice_int<'a>() -> impl Parser<'a, &'a str, SumDiceExpr, extra::Err<Rich<'a, char>>> + Clone {
+    text::int::<_, extra::Err<Rich<char>>>(10)
+        .from_str()
+        .unwrapped()
+        .map(SumDiceExpr::Number)
+}
+
+fn sum_dice_element<'a>() -> impl Parser<'a, &'a str, SumDiceElement, extra::Err<Rich<'a, char>>> + Clone {
+    dice_element('D')
+        .then(sum_dice_pick().labelled("sum pick specifier").or_not())
+        .map(|(element, pick)| SumDiceElement { element, pick })
+}
+
+fn sum_dice_pick<'a>() -> impl Parser<'a, &'a str, SumDicePick, extra::Err<Rich<'a, char>>> + Clone {
     let kh = just("KH").then(term()).map(|(_, v)| SumDicePick::KeepHighest(v));
     let kl = just("KL").then(term()).map(|(_, v)| SumDicePick::KeepLowest(v));
     let dh = just("DH").then(term()).map(|(_, v)| SumDicePick::DropHighest(v));
@@ -26,61 +79,44 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::dice::{DiceElement, SumDice, SumDicePick};
+    use crate::types::{
+        constexpr::ConstExpr,
+        dice::{DiceElement, SumDice, SumDiceElement, SumDiceExpr, SumDicePick},
+        query::{QueryKind, RangeQuery},
+    };
 
-    use super::sum_dice;
+    use super::{sum_dice, sum_dice_element};
 
     #[test]
-    fn sum_dice_parses_basic() {
+    fn sum_dice_parses() {
         let parser = sum_dice();
         assert_eq!(
-            parser.parse("1D6").into_result(),
+            parser.parse("2D6+2>=7+4").into_result(),
             Ok(SumDice {
-                element: DiceElement {
-                    rolls: 1.into(),
-                    faces: 6.into(),
-                },
-                pick: None
-            })
-        );
-        assert_eq!(
-            parser.parse("2D10").into_result(),
-            Ok(SumDice {
-                element: DiceElement {
-                    rolls: 2.into(),
-                    faces: 10.into(),
-                },
-                pick: None
-            })
-        );
-        assert_eq!(
-            parser.parse("10D4").into_result(),
-            Ok(SumDice {
-                element: DiceElement {
-                    rolls: 10.into(),
-                    faces: 4.into(),
-                },
-                pick: None
-            })
-        );
-        assert_eq!(
-            parser.parse("20D20").into_result(),
-            Ok(SumDice {
-                element: DiceElement {
-                    rolls: 20.into(),
-                    faces: 20.into(),
-                },
-                pick: None
+                expression: SumDiceExpr::Add(
+                    Box::new(SumDiceExpr::Element(SumDiceElement {
+                        element: DiceElement {
+                            rolls: 2.into(),
+                            faces: 6.into(),
+                        },
+                        pick: None,
+                    })),
+                    Box::new(SumDiceExpr::Number(2)),
+                ),
+                target_query: Some(RangeQuery {
+                    kind: QueryKind::GreaterEqual,
+                    value: ConstExpr::Add(Box::new(7.into()), Box::new(4.into())),
+                }),
             })
         );
     }
 
     #[test]
     fn sum_dice_parses_pick() {
-        let parser = sum_dice();
+        let parser = sum_dice_element();
         assert_eq!(
             parser.parse("5D6KH3").into_result(),
-            Ok(SumDice {
+            Ok(SumDiceElement {
                 element: DiceElement {
                     rolls: 5.into(),
                     faces: 6.into(),
@@ -90,7 +126,7 @@ mod test {
         );
         assert_eq!(
             parser.parse("10D20KL10").into_result(),
-            Ok(SumDice {
+            Ok(SumDiceElement {
                 element: DiceElement {
                     rolls: 10.into(),
                     faces: 20.into(),
@@ -100,7 +136,7 @@ mod test {
         );
         assert_eq!(
             parser.parse("3D4DH1").into_result(),
-            Ok(SumDice {
+            Ok(SumDiceElement {
                 element: DiceElement {
                     rolls: 3.into(),
                     faces: 4.into(),
@@ -110,7 +146,7 @@ mod test {
         );
         assert_eq!(
             parser.parse("5D12DL2").into_result(),
-            Ok(SumDice {
+            Ok(SumDiceElement {
                 element: DiceElement {
                     rolls: 5.into(),
                     faces: 12.into(),
@@ -120,7 +156,7 @@ mod test {
         );
         assert_eq!(
             parser.parse("3D6MAX").into_result(),
-            Ok(SumDice {
+            Ok(SumDiceElement {
                 element: DiceElement {
                     rolls: 3.into(),
                     faces: 6.into(),
@@ -130,7 +166,7 @@ mod test {
         );
         assert_eq!(
             parser.parse("4D8MIN").into_result(),
-            Ok(SumDice {
+            Ok(SumDiceElement {
                 element: DiceElement {
                     rolls: 4.into(),
                     faces: 8.into(),

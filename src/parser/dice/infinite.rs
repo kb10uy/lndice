@@ -1,7 +1,11 @@
 use chumsky::prelude::*;
 
 use crate::{
-    parser::{constexpr::term, dice::dice_element, query::range_query},
+    parser::{
+        constexpr::{expr, term},
+        dice::dice_element,
+        query::range_query,
+    },
     types::{constexpr::ConstExpr, dice::InfiniteDice},
 };
 
@@ -31,7 +35,7 @@ pub(super) fn infinite_dice<'a>() -> impl Parser<'a, &'a str, InfiniteDice, extr
 }
 
 fn surrounded_threshold<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> {
-    term().delimited_by(just('['), just(']'))
+    expr().delimited_by(just('['), just(']'))
 }
 
 #[cfg(test)]

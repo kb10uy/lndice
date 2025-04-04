@@ -2,7 +2,7 @@ use chumsky::prelude::*;
 
 use crate::{
     parser::{
-        constexpr::term,
+        constexpr::expr,
         dice::dice_element,
         query::{query_kind, range_query},
     },
@@ -40,7 +40,7 @@ pub(super) fn replay_dice<'a>() -> impl Parser<'a, &'a str, ReplayDice, extra::E
 }
 
 fn surrounded_replay<'a>() -> impl Parser<'a, &'a str, (Option<QueryKind>, ConstExpr), extra::Err<Rich<'a, char>>> {
-    query_kind().or_not().then(term()).delimited_by(just('['), just(']'))
+    query_kind().or_not().then(expr()).delimited_by(just('['), just(']'))
 }
 
 #[cfg(test)]

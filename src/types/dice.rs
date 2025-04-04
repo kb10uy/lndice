@@ -1,4 +1,7 @@
-use crate::types::{constexpr::ConstExpr, query::RangeQuery};
+use crate::types::{
+    constexpr::{ConstExpr, FractionMode},
+    query::RangeQuery,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DiceCommand {
@@ -18,8 +21,24 @@ pub struct DiceElement {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SumDice {
+    pub expression: SumDiceExpr,
+    pub target_query: Option<RangeQuery>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SumDiceElement {
     pub element: DiceElement,
     pub pick: Option<SumDicePick>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum SumDiceExpr {
+    Number(usize),
+    Element(SumDiceElement),
+    Add(Box<SumDiceExpr>, Box<SumDiceExpr>),
+    Subtract(Box<SumDiceExpr>, Box<SumDiceExpr>),
+    Multiply(Box<SumDiceExpr>, Box<SumDiceExpr>),
+    Divide(Box<SumDiceExpr>, Box<SumDiceExpr>, Option<FractionMode>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -9,7 +9,7 @@ pub(super) fn term<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<
     int().or(expr().delimited_by(just('('), just(')')))
 }
 
-fn expr<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> + Clone {
+pub(super) fn expr<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> + Clone {
     recursive(|expr| {
         let term = int().or(expr.delimited_by(just('('), just(')')));
         term.pratt((
@@ -40,7 +40,7 @@ fn int<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> 
         .map(ConstExpr::Number)
 }
 
-fn fraction_mode<'a>() -> impl Parser<'a, &'a str, FractionMode, extra::Err<Rich<'a, char>>> + Clone {
+pub(super) fn fraction_mode<'a>() -> impl Parser<'a, &'a str, FractionMode, extra::Err<Rich<'a, char>>> + Clone {
     one_of("FCUR").map(|c| match c {
         'F' => FractionMode::Floor,
         'C' | 'U' => FractionMode::Ceil,
