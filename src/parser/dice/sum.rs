@@ -65,10 +65,10 @@ fn sum_dice_element<'a>() -> impl Parser<'a, &'a str, SumDiceElement, extra::Err
 }
 
 fn sum_dice_pick<'a>() -> impl Parser<'a, &'a str, SumDicePick, extra::Err<Rich<'a, char>>> + Clone {
-    let kh = just("KH").then(term()).map(|(_, v)| SumDicePick::KeepHighest(v));
-    let kl = just("KL").then(term()).map(|(_, v)| SumDicePick::KeepLowest(v));
-    let dh = just("DH").then(term()).map(|(_, v)| SumDicePick::DropHighest(v));
-    let dl = just("DL").then(term()).map(|(_, v)| SumDicePick::DropLowest(v));
+    let kh = just("KH").ignore_then(term()).map(SumDicePick::KeepHighest);
+    let kl = just("KL").ignore_then(term()).map(SumDicePick::KeepLowest);
+    let dh = just("DH").ignore_then(term()).map(SumDicePick::DropHighest);
+    let dl = just("DL").ignore_then(term()).map(SumDicePick::DropLowest);
     let max = just("MAX").map(|_| SumDicePick::KeepHighest(1.into()));
     let min = just("MIN").map(|_| SumDicePick::KeepLowest(1.into()));
     choice((kh, kl, dh, dl, max, min))

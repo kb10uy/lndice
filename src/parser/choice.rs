@@ -4,12 +4,12 @@ use crate::types::choice::{Choice, ChoiceItems};
 
 pub(super) fn choice_command<'a>() -> impl Parser<'a, &'a str, Choice, extra::Err<Rich<'a, char>>> {
     just("choice")
-        .then(choice((
+        .ignore_then(choice((
             choice_items_brackets(),
             choice_items_parens(),
             choice_items_spaces(),
         )))
-        .map(|(_, items)| Choice(items))
+        .map(Choice)
 }
 
 fn choice_items_brackets<'a>() -> impl Parser<'a, &'a str, ChoiceItems, extra::Err<Rich<'a, char>>> {

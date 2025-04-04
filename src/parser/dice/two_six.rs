@@ -4,8 +4,8 @@ use crate::types::dice::TwoSixDice;
 
 pub(super) fn two_six_dice<'a>() -> impl Parser<'a, &'a str, TwoSixDice, extra::Err<Rich<'a, char>>> {
     just("D66")
-        .then(one_of("ASDN").labelled("D66 specifier").or_not())
-        .map(|(_, c)| match c {
+        .ignore_then(one_of("ASDN").labelled("D66 specifier").or_not())
+        .map(|c| match c {
             None => TwoSixDice::Unspecified,
             Some('A' | 'S') => TwoSixDice::Ascending,
             Some('D') => TwoSixDice::Descending,

@@ -15,11 +15,7 @@ pub(super) fn infinite_dice<'a>() -> impl Parser<'a, &'a str, InfiniteDice, extr
         .collect()
         .labelled("dice roll elements");
     let threshold = surrounded_threshold().labelled("infinite roll threshold").or_not();
-    let bias = just('+')
-        .then(term())
-        .map(|(_, v)| v)
-        .labelled("infinite roll bias")
-        .or_not();
+    let bias = just('+').ignore_then(term()).labelled("infinite roll bias").or_not();
     let query = range_query().labelled("query").or_not();
 
     elements
