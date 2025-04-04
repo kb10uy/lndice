@@ -2,7 +2,7 @@ use chumsky::prelude::*;
 
 use crate::types::dice::TwoSixDice;
 
-pub(super) fn two_six_dice<'a>() -> impl Parser<'a, &'a str, TwoSixDice, extra::Err<Rich<'a, char>>> {
+pub fn two_six_dice<'a>() -> impl Parser<'a, &'a str, TwoSixDice, extra::Err<Rich<'a, char>>> + Clone {
     just("D66")
         .ignore_then(one_of("ASDN").labelled("D66 specifier").or_not())
         .map(|c| match c {

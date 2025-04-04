@@ -5,7 +5,7 @@ use crate::{
     types::dice::{DiceElement, TallyDice},
 };
 
-pub(super) fn tally_dice<'a>() -> impl Parser<'a, &'a str, TallyDice, extra::Err<Rich<'a, char>>> {
+pub fn tally_dice<'a>() -> impl Parser<'a, &'a str, TallyDice, extra::Err<Rich<'a, char>>> + Clone {
     (term().labelled("dice rolls"))
         .then_ignore(just('T'))
         .then(one_of("YZ").labelled("tally specifier"))

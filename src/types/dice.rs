@@ -3,15 +3,6 @@ use crate::types::{
     query::RangeQuery,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum DiceCommand {
-    Sum(SumDice),
-    Individual(IndividualDice),
-    Replay(ReplayDice),
-    Infinite(InfiniteDice),
-    Tally(TallyDice),
-    TwoSix(TwoSixDice),
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DiceElement {

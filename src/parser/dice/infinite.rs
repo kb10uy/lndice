@@ -9,7 +9,7 @@ use crate::{
     types::{constexpr::ConstExpr, dice::InfiniteDice},
 };
 
-pub(super) fn infinite_dice<'a>() -> impl Parser<'a, &'a str, InfiniteDice, extra::Err<Rich<'a, char>>> {
+pub fn infinite_dice<'a>() -> impl Parser<'a, &'a str, InfiniteDice, extra::Err<Rich<'a, char>>> + Clone {
     let elements = dice_element('U')
         .separated_by(just('+'))
         .collect()
@@ -30,7 +30,7 @@ pub(super) fn infinite_dice<'a>() -> impl Parser<'a, &'a str, InfiniteDice, extr
         })
 }
 
-fn surrounded_threshold<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> {
+fn surrounded_threshold<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> + Clone {
     expr().delimited_by(just('['), just(']'))
 }
 

@@ -5,13 +5,13 @@ use crate::{
     types::query::{QueryKind, RangeQuery},
 };
 
-pub(super) fn range_query<'a>() -> impl Parser<'a, &'a str, RangeQuery, extra::Err<Rich<'a, char>>> {
+pub(super) fn range_query<'a>() -> impl Parser<'a, &'a str, RangeQuery, extra::Err<Rich<'a, char>>> + Clone {
     query_kind()
         .then(expr())
         .map(|(kind, value)| RangeQuery { kind, value })
 }
 
-pub(super) fn query_kind<'a>() -> impl Parser<'a, &'a str, QueryKind, extra::Err<Rich<'a, char>>> {
+pub(super) fn query_kind<'a>() -> impl Parser<'a, &'a str, QueryKind, extra::Err<Rich<'a, char>>> + Clone {
     choice((
         just(">=").map(|_| QueryKind::GreaterEqual),
         just(">").map(|_| QueryKind::Greater),

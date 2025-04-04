@@ -2,7 +2,7 @@ use chumsky::prelude::*;
 
 use crate::{parser::dice::dice_element, types::dice::IndividualDice};
 
-pub(super) fn individual_dice<'a>() -> impl Parser<'a, &'a str, IndividualDice, extra::Err<Rich<'a, char>>> {
+pub fn individual_dice<'a>() -> impl Parser<'a, &'a str, IndividualDice, extra::Err<Rich<'a, char>>> + Clone {
     dice_element('B').map(IndividualDice)
 }
 

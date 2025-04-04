@@ -5,23 +5,16 @@ mod sum;
 mod tally;
 mod two_six;
 
+pub use individual::individual_dice;
+pub use infinite::infinite_dice;
+pub use replay::replay_dice;
+pub use sum::sum_dice;
+pub use tally::tally_dice;
+pub use two_six::two_six_dice;
+
 use chumsky::prelude::*;
 
-use crate::{
-    parser::constexpr::term,
-    types::dice::{DiceCommand, DiceElement},
-};
-
-pub(super) fn dice_command<'a>() -> impl Parser<'a, &'a str, DiceCommand, extra::Err<Rich<'a, char>>> {
-    choice((
-        sum::sum_dice().map(DiceCommand::Sum),
-        individual::individual_dice().map(DiceCommand::Individual),
-        replay::replay_dice().map(DiceCommand::Replay),
-        infinite::infinite_dice().map(DiceCommand::Infinite),
-        tally::tally_dice().map(DiceCommand::Tally),
-        two_six::two_six_dice().map(DiceCommand::TwoSix),
-    ))
-}
+use crate::{parser::constexpr::term, types::dice::DiceElement};
 
 fn dice_element<'a>(symbol: char) -> impl Parser<'a, &'a str, DiceElement, extra::Err<Rich<'a, char>>> + Clone {
     (term().labelled("dice rolls"))

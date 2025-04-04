@@ -12,7 +12,7 @@ use crate::{
     types::dice::{SumDice, SumDiceElement, SumDiceExpr, SumDicePick},
 };
 
-pub(super) fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice, extra::Err<Rich<'a, char>>> {
+pub fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice, extra::Err<Rich<'a, char>>> + Clone {
     let elements = sum_dice_expr().labelled("sum dice expression");
     let query = range_query().labelled("query").or_not();
 
@@ -22,7 +22,7 @@ pub(super) fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice, extra::Err<Ric
     })
 }
 
-fn sum_dice_expr<'a>() -> impl Parser<'a, &'a str, SumDiceExpr, extra::Err<Rich<'a, char>>> {
+fn sum_dice_expr<'a>() -> impl Parser<'a, &'a str, SumDiceExpr, extra::Err<Rich<'a, char>>> + Clone {
     recursive(|expr| {
         let term = (sum_dice_element()
             .map(SumDiceExpr::Element)
