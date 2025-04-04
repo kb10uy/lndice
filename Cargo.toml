@@ -3,9 +3,13 @@ name = "lndice"
 version = "0.1.0"
 edition = "2024"
 
+[[example]]
+name = "parser"
+
 [dependencies]
 chumsky = { version = "0.10.0", features = ["pratt"] }
 
 [dev-dependencies]
+ariadne = "0.5.1"
 pretty_assertions = "1.4.1"
 rstest = "0.25.0"
