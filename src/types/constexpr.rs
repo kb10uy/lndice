@@ -13,3 +13,9 @@ pub enum FractionMode {
     Ceil,
     Round,
 }
+
+impl From<usize> for ConstExpr {
+    fn from(value: usize) -> Self {
+        ConstExpr::Number(value)
+    }
+}

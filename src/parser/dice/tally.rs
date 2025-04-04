@@ -1,15 +1,15 @@
 use chumsky::prelude::*;
 
 use crate::{
-    parser::query::int,
+    parser::constexpr::term,
     types::dice::{DiceElement, TallyDice},
 };
 
 pub(super) fn tally_dice<'a>() -> impl Parser<'a, &'a str, TallyDice, extra::Err<Rich<'a, char>>> {
-    (int().labelled("dice rolls"))
+    (term().labelled("dice rolls"))
         .then_ignore(just('T'))
         .then(one_of("YZ").labelled("tally specifier"))
-        .then(int().labelled("dice faces"))
+        .then(term().labelled("dice faces"))
         .map(|((rolls, tally), faces)| TallyDice {
             element: DiceElement { rolls, faces },
             with_zero: tally == 'Z',
@@ -31,14 +31,20 @@ mod test {
         assert_eq!(
             parser.parse("4TY20").into_result(),
             Ok(TallyDice {
-                element: DiceElement { rolls: 4, faces: 20 },
+                element: DiceElement {
+                    rolls: 4.into(),
+                    faces: 20.into(),
+                },
                 with_zero: false,
             })
         );
         assert_eq!(
             parser.parse("10TZ20").into_result(),
             Ok(TallyDice {
-                element: DiceElement { rolls: 10, faces: 20 },
+                element: DiceElement {
+                    rolls: 10.into(),
+                    faces: 20.into(),
+                },
                 with_zero: true,
             })
         );

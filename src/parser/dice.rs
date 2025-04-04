@@ -8,7 +8,7 @@ mod two_six;
 use chumsky::prelude::*;
 
 use crate::{
-    parser::query::int,
+    parser::constexpr::term,
     types::dice::{DiceCommand, DiceElement},
 };
 
@@ -24,8 +24,8 @@ pub(super) fn dice_command<'a>() -> impl Parser<'a, &'a str, DiceCommand, extra:
 }
 
 fn dice_element<'a>(symbol: char) -> impl Parser<'a, &'a str, DiceElement, extra::Err<Rich<'a, char>>> {
-    (int().labelled("dice rolls"))
+    (term().labelled("dice rolls"))
         .then_ignore(just(symbol))
-        .then(int().labelled("dice faces"))
+        .then(term().labelled("dice faces"))
         .map(|(rolls, faces)| DiceElement { rolls, faces })
 }

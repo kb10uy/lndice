@@ -20,7 +20,10 @@ mod test {
         let parser = individual_dice();
         assert_eq!(
             parser.parse("2B6").into_result(),
-            Ok(IndividualDice(DiceElement { rolls: 2, faces: 6 }))
+            Ok(IndividualDice(DiceElement {
+                rolls: 2.into(),
+                faces: 6.into(),
+            }))
         );
     }
 }

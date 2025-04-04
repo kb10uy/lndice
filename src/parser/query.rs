@@ -1,9 +1,14 @@
 use chumsky::prelude::*;
 
-use crate::types::query::{QueryKind, RangeQuery};
+use crate::{
+    parser::constexpr::term,
+    types::query::{QueryKind, RangeQuery},
+};
 
 pub(super) fn range_query<'a>() -> impl Parser<'a, &'a str, RangeQuery, extra::Err<Rich<'a, char>>> {
-    query_kind().then(int()).map(|(kind, value)| RangeQuery { kind, value })
+    query_kind()
+        .then(term())
+        .map(|(kind, value)| RangeQuery { kind, value })
 }
 
 pub(super) fn query_kind<'a>() -> impl Parser<'a, &'a str, QueryKind, extra::Err<Rich<'a, char>>> {

@@ -54,7 +54,7 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::constexpr::ConstExpr;
+    use crate::types::constexpr::{ConstExpr, FractionMode};
 
     use super::{expr, term};
 
@@ -63,35 +63,6 @@ mod test {
         let parser = term();
         assert_eq!(parser.parse("42").into_result(), Ok(ConstExpr::Number(42)));
         assert_eq!(parser.parse("(12345)").into_result(), Ok(ConstExpr::Number(12345)));
-        assert_eq!(
-            parser.parse("1+1").into_result(),
-            Ok(ConstExpr::Add(
-                Box::new(ConstExpr::Number(1)),
-                Box::new(ConstExpr::Number(1)),
-            ))
-        );
-        assert_eq!(
-            parser.parse("2-2").into_result(),
-            Ok(ConstExpr::Subtract(
-                Box::new(ConstExpr::Number(2)),
-                Box::new(ConstExpr::Number(2)),
-            ))
-        );
-        assert_eq!(
-            parser.parse("3*3").into_result(),
-            Ok(ConstExpr::Multiply(
-                Box::new(ConstExpr::Number(3)),
-                Box::new(ConstExpr::Number(3)),
-            ))
-        );
-        assert_eq!(
-            parser.parse("4/4").into_result(),
-            Ok(ConstExpr::Divide(
-                Box::new(ConstExpr::Number(4)),
-                Box::new(ConstExpr::Number(4)),
-                None,
-            ))
-        );
     }
 
     #[test]
@@ -124,6 +95,43 @@ mod test {
                 Box::new(ConstExpr::Number(4)),
                 Box::new(ConstExpr::Number(4)),
                 None,
+            ))
+        );
+    }
+
+    #[test]
+    fn constexpr_parses_fraction_mode() {
+        let parser = expr();
+        assert_eq!(
+            parser.parse("1/2F").into_result(),
+            Ok(ConstExpr::Divide(
+                Box::new(ConstExpr::Number(1)),
+                Box::new(ConstExpr::Number(2)),
+                Some(FractionMode::Floor),
+            ))
+        );
+        assert_eq!(
+            parser.parse("2/3C").into_result(),
+            Ok(ConstExpr::Divide(
+                Box::new(ConstExpr::Number(2)),
+                Box::new(ConstExpr::Number(3)),
+                Some(FractionMode::Ceil),
+            ))
+        );
+        assert_eq!(
+            parser.parse("3/4U").into_result(),
+            Ok(ConstExpr::Divide(
+                Box::new(ConstExpr::Number(3)),
+                Box::new(ConstExpr::Number(4)),
+                Some(FractionMode::Ceil),
+            ))
+        );
+        assert_eq!(
+            parser.parse("4/5R").into_result(),
+            Ok(ConstExpr::Divide(
+                Box::new(ConstExpr::Number(4)),
+                Box::new(ConstExpr::Number(5)),
+                Some(FractionMode::Round),
             ))
         );
     }

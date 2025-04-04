@@ -1,4 +1,4 @@
-use crate::types::query::RangeQuery;
+use crate::types::{constexpr::ConstExpr, query::RangeQuery};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DiceCommand {
@@ -12,8 +12,8 @@ pub enum DiceCommand {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DiceElement {
-    pub rolls: usize,
-    pub faces: usize,
+    pub rolls: ConstExpr,
+    pub faces: ConstExpr,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -24,10 +24,10 @@ pub struct SumDice {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SumDicePick {
-    KeepHighest(usize),
-    KeepLowest(usize),
-    DropHighest(usize),
-    DropLowest(usize),
+    KeepHighest(ConstExpr),
+    KeepLowest(ConstExpr),
+    DropHighest(ConstExpr),
+    DropLowest(ConstExpr),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -43,8 +43,8 @@ pub struct ReplayDice {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InfiniteDice {
     pub elements: Vec<DiceElement>,
-    pub threshold: Option<usize>,
-    pub bias: Option<usize>,
+    pub threshold: Option<ConstExpr>,
+    pub bias: Option<ConstExpr>,
     pub target_query: Option<RangeQuery>,
 }
 

@@ -1,7 +1,9 @@
+use crate::types::constexpr::ConstExpr;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RangeQuery {
     pub kind: QueryKind,
-    pub value: usize,
+    pub value: ConstExpr,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

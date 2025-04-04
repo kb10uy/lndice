@@ -2,10 +2,12 @@ use chumsky::prelude::*;
 
 use crate::{
     parser::{
+        constexpr::term,
         dice::dice_element,
-        query::{int, query_kind, range_query},
+        query::{query_kind, range_query},
     },
     types::{
+        constexpr::ConstExpr,
         dice::ReplayDice,
         query::{QueryKind, RangeQuery},
     },
@@ -37,8 +39,8 @@ pub(super) fn replay_dice<'a>() -> impl Parser<'a, &'a str, ReplayDice, extra::E
         })
 }
 
-fn surrounded_replay<'a>() -> impl Parser<'a, &'a str, (Option<QueryKind>, usize), extra::Err<Rich<'a, char>>> {
-    query_kind().or_not().then(int()).delimited_by(just('['), just(']'))
+fn surrounded_replay<'a>() -> impl Parser<'a, &'a str, (Option<QueryKind>, ConstExpr), extra::Err<Rich<'a, char>>> {
+    query_kind().or_not().then(term()).delimited_by(just('['), just(']'))
 }
 
 #[cfg(test)]
@@ -59,14 +61,23 @@ mod test {
         assert_eq!(
             parser.parse("2R6+1R10[>3]>=5").into_result(),
             Ok(ReplayDice {
-                elements: vec![DiceElement { rolls: 2, faces: 6 }, DiceElement { rolls: 1, faces: 10 },],
+                elements: vec![
+                    DiceElement {
+                        rolls: 2.into(),
+                        faces: 6.into()
+                    },
+                    DiceElement {
+                        rolls: 1.into(),
+                        faces: 10.into()
+                    },
+                ],
                 replay_query: Some(RangeQuery {
                     kind: QueryKind::Greater,
-                    value: 3
+                    value: 3.into(),
                 }),
                 target_query: Some(RangeQuery {
                     kind: QueryKind::GreaterEqual,
-                    value: 5
+                    value: 5.into(),
                 })
             })
         );
