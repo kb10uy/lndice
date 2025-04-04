@@ -1,8 +1,8 @@
 use chumsky::prelude::*;
 
 use crate::{
-    parser::{dice::dice_element, expression::int},
-    types::{SumDice, SumDicePick},
+    parser::{dice::dice_element, query::int},
+    types::dice::{SumDice, SumDicePick},
 };
 
 pub(super) fn sum_dice<'a>() -> impl Parser<'a, &'a str, SumDice, extra::Err<Rich<'a, char>>> {
@@ -26,7 +26,7 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::{DiceElement, SumDice, SumDicePick};
+    use crate::types::dice::{DiceElement, SumDice, SumDicePick};
 
     use super::sum_dice;
 

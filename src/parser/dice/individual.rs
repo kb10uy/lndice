@@ -1,6 +1,6 @@
 use chumsky::prelude::*;
 
-use crate::{parser::dice::dice_element, types::IndividualDice};
+use crate::{parser::dice::dice_element, types::dice::IndividualDice};
 
 pub(super) fn individual_dice<'a>() -> impl Parser<'a, &'a str, IndividualDice, extra::Err<Rich<'a, char>>> {
     dice_element('B').map(IndividualDice)
@@ -11,7 +11,7 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::{DiceElement, IndividualDice};
+    use crate::types::dice::{DiceElement, IndividualDice};
 
     use super::individual_dice;
 

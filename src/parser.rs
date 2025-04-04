@@ -1,5 +1,6 @@
+mod constexpr;
 mod dice;
-mod expression;
+mod query;
 
 use chumsky::Parser;
 

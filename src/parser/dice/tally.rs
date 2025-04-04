@@ -1,8 +1,8 @@
 use chumsky::prelude::*;
 
 use crate::{
-    parser::expression::int,
-    types::{DiceElement, TallyDice},
+    parser::query::int,
+    types::dice::{DiceElement, TallyDice},
 };
 
 pub(super) fn tally_dice<'a>() -> impl Parser<'a, &'a str, TallyDice, extra::Err<Rich<'a, char>>> {
@@ -21,7 +21,7 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::{DiceElement, TallyDice};
+    use crate::types::dice::{DiceElement, TallyDice};
 
     use super::tally_dice;
 

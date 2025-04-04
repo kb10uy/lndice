@@ -3,9 +3,12 @@ use chumsky::prelude::*;
 use crate::{
     parser::{
         dice::dice_element,
-        expression::{int, query_kind, range_query},
+        query::{int, query_kind, range_query},
     },
-    types::{QueryKind, RangeQuery, ReplayDice},
+    types::{
+        dice::ReplayDice,
+        query::{QueryKind, RangeQuery},
+    },
 };
 
 pub(super) fn replay_dice<'a>() -> impl Parser<'a, &'a str, ReplayDice, extra::Err<Rich<'a, char>>> {
@@ -43,7 +46,10 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::{DiceElement, QueryKind, RangeQuery, ReplayDice};
+    use crate::types::{
+        dice::{DiceElement, ReplayDice},
+        query::{QueryKind, RangeQuery},
+    };
 
     use super::replay_dice;
 

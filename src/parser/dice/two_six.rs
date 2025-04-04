@@ -1,6 +1,6 @@
 use chumsky::prelude::*;
 
-use crate::types::TwoSixDice;
+use crate::types::dice::TwoSixDice;
 
 pub(super) fn two_six_dice<'a>() -> impl Parser<'a, &'a str, TwoSixDice, extra::Err<Rich<'a, char>>> {
     just("D66")
@@ -19,7 +19,7 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::TwoSixDice;
+    use crate::types::dice::TwoSixDice;
 
     use super::two_six_dice;
 

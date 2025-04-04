@@ -3,9 +3,9 @@ use chumsky::prelude::*;
 use crate::{
     parser::{
         dice::dice_element,
-        expression::{int, range_query},
+        query::{int, range_query},
     },
-    types::InfiniteDice,
+    types::dice::InfiniteDice,
 };
 
 pub(super) fn infinite_dice<'a>() -> impl Parser<'a, &'a str, InfiniteDice, extra::Err<Rich<'a, char>>> {
@@ -42,7 +42,10 @@ mod test {
     use chumsky::Parser;
     use pretty_assertions::assert_eq;
 
-    use crate::types::{DiceElement, InfiniteDice, QueryKind, RangeQuery};
+    use crate::types::{
+        dice::{DiceElement, InfiniteDice},
+        query::{QueryKind, RangeQuery},
+    };
 
     use super::infinite_dice;
 

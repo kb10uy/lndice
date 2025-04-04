@@ -8,8 +8,8 @@ mod two_six;
 use chumsky::prelude::*;
 
 use crate::{
-    parser::expression::int,
-    types::{DiceCommand, DiceElement},
+    parser::query::int,
+    types::dice::{DiceCommand, DiceElement},
 };
 
 pub(super) fn dice_command<'a>() -> impl Parser<'a, &'a str, DiceCommand, extra::Err<Rich<'a, char>>> {

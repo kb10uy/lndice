@@ -1,6 +1,6 @@
 use chumsky::prelude::*;
 
-use crate::types::{QueryKind, RangeQuery};
+use crate::types::query::{QueryKind, RangeQuery};
 
 pub(super) fn int<'a>() -> impl Parser<'a, &'a str, usize, extra::Err<Rich<'a, char>>> {
     text::int::<_, extra::Err<Rich<char>>>(10).from_str().unwrapped()
