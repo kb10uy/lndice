@@ -7,7 +7,7 @@ pub enum ConstExpr {
     Divide(Box<ConstExpr>, Box<ConstExpr>, Option<FractionMode>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FractionMode {
     Floor,
     Ceil,
