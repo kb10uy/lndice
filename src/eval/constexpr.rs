@@ -1,20 +1,30 @@
-use num::Rational64;
+use num::rational::Ratio;
 
-use crate::types::constexpr::{ConstExpr, FractionMode};
+use crate::{
+    eval::{EvalContext, error::Error},
+    types::constexpr::{ConstExpr, FractionMode},
+};
 
-pub fn eval_constexpr(constexpr: &ConstExpr, default_fm: FractionMode) -> Rational64 {
+pub fn eval_constexpr(ctx: &EvalContext, constexpr: &ConstExpr) -> Result<isize, Error> {
     match constexpr {
-        ConstExpr::Number(n) => (*n as i64).into(),
-        ConstExpr::Add(lhs, rhs) => eval_constexpr(lhs, default_fm) + eval_constexpr(rhs, default_fm),
-        ConstExpr::Subtract(lhs, rhs) => eval_constexpr(lhs, default_fm) - eval_constexpr(rhs, default_fm),
-        ConstExpr::Multiply(lhs, rhs) => eval_constexpr(lhs, default_fm) * eval_constexpr(rhs, default_fm),
+        ConstExpr::Number(n) => Ok(*n as isize),
+        ConstExpr::Add(lhs, rhs) => Ok(eval_constexpr(ctx, lhs)? + eval_constexpr(ctx, rhs)?),
+        ConstExpr::Subtract(lhs, rhs) => Ok(eval_constexpr(ctx, lhs)? - eval_constexpr(ctx, rhs)?),
+        ConstExpr::Multiply(lhs, rhs) => Ok(eval_constexpr(ctx, lhs)? * eval_constexpr(ctx, rhs)?),
         ConstExpr::Divide(lhs, rhs, fm) => {
-            let rational_value = eval_constexpr(lhs, default_fm) / eval_constexpr(rhs, default_fm);
-            match fm.unwrap_or(default_fm) {
-                FractionMode::Floor => rational_value.floor(),
-                FractionMode::Ceil => rational_value.ceil(),
-                FractionMode::Round => rational_value.round(),
+            let numerator = eval_constexpr(ctx, lhs)?;
+            let denominator = eval_constexpr(ctx, rhs)?;
+            if denominator == 0 {
+                return Err(Error::DivisionByZero);
             }
+
+            let rational_value = Ratio::new(numerator, denominator);
+            let cut = match fm.unwrap_or(ctx.default_fraction) {
+                FractionMode::Floor => rational_value.floor().to_integer(),
+                FractionMode::Ceil => rational_value.ceil().to_integer(),
+                FractionMode::Round => rational_value.round().to_integer(),
+            };
+            Ok(cut)
         }
     }
 }

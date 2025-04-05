@@ -16,6 +16,7 @@ ffi = []
 chumsky = { version = "0.10.0", features = ["pratt"] }
 num = "0.4.3"
 rand = "0.9.0"
+thiserror = "2.0.12"
 
 [dev-dependencies]
 ariadne = "0.5.1"
