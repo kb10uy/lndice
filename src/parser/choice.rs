@@ -3,7 +3,7 @@ use chumsky::prelude::*;
 use crate::types::choice::{Choice, ChoiceItems};
 
 pub(super) fn choice_command<'a>() -> impl Parser<'a, &'a str, Choice, extra::Err<Rich<'a, char>>> + Clone {
-    just("choice")
+    (just("choice").labelled("choice prefix"))
         .ignore_then(choice((
             choice_items_brackets().labelled("bracket items"),
             choice_items_parens().labelled("parens items"),

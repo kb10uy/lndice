@@ -1,3 +1,5 @@
+use crate::types::query::ResolvedQuery;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SumDiceRoll {
     pub(in crate::eval) rolled_dice: Box<[i64]>,
@@ -30,7 +32,8 @@ impl IndividualDiceRoll {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ReplayDiceRoll {
-    pub(in crate::eval) rolled_dice: Box<[i64]>,
+pub struct ReplayDiceResult {
+    pub(in crate::eval) query: Option<ResolvedQuery>,
+    pub(in crate::eval) rolled_groups: Box<[Box<[i64]>]>,
     pub(in crate::eval) replay_counts: Box<[usize]>,
 }

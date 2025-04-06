@@ -13,4 +13,7 @@ pub enum Error {
 
     #[error("no condition provided")]
     NoConditionProvided,
+
+    #[error("given condition will lead to infinite roll")]
+    InfiniteReplay,
 }

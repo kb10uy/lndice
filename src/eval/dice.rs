@@ -5,7 +5,7 @@ use crate::{
         EvalContext,
         constexpr::eval_constexpr,
         error::Error,
-        roll::{IndividualDiceRoll, ReplayDiceRoll, SumDiceRoll},
+        roll::{IndividualDiceRoll, ReplayDiceResult, SumDiceRoll},
     },
     types::{
         dice::{DiceElement, ReplayDice, SumDiceElement, SumDicePick},
@@ -75,8 +75,9 @@ pub fn eval_replay_dice<R: Rng + ?Sized>(
     ctx: &EvalContext,
     rng: &mut R,
     dice: &ReplayDice,
-) -> Result<ReplayDiceRoll, Error> {
-    let (replay, target) = match (&dice.replay_query, &dice.target_query) {
+) -> Result<ReplayDiceResult, Error> {
+    // resolve conditions
+    let (replay_condition, target_condition) = match (&dice.replay_query, &dice.target_query) {
         (Some(r), Some(t)) => {
             let replay = resolve_query(ctx, r)?;
             let target = resolve_query(ctx, r)?;
@@ -93,7 +94,42 @@ pub fn eval_replay_dice<R: Rng + ?Sized>(
         (None, None) => return Err(Error::NoConditionProvided),
     };
 
-    todo!();
+    // resolve dice elements
+    let resolved_elements = dice
+        .elements
+        .iter()
+        .map(|de| {
+            let rolls_count = eval_constexpr(ctx, &de.rolls)? as usize;
+            let faces_count = eval_constexpr(ctx, &de.faces)? as i64;
+            if replay_condition.passes_all(faces_count) {
+                return Err(Error::InfiniteReplay);
+            }
+
+            let distr = Uniform::new(1, faces_count + 1).map_err(|_| Error::InvalidDice)?;
+            Ok((rolls_count, distr))
+        })
+        .collect::<Result<Vec<_>, Error>>()?;
+
+    // roll
+    let mut rolled_groups = vec![];
+    let mut judges: Vec<_> = resolved_elements.iter().map(|_| (true, 0)).collect();
+    while judges.iter().any(|(r, _)| *r) {
+        let replaying_elements = resolved_elements.iter().zip(judges.iter_mut()).filter(|(_, (r, _))| *r);
+        for ((rolls_count, distr), (replay, count)) in replaying_elements {
+            let group: Box<_> = rng.sample_iter(distr).take(*rolls_count).collect();
+            *replay = group.iter().any(|r| replay_condition.passes(*r));
+            *count += 1;
+            rolled_groups.push(group);
+        }
+    }
+
+    let rolled_groups = rolled_groups.into();
+    let replay_counts = judges.into_iter().map(|(_, c)| c).collect();
+    Ok(ReplayDiceResult {
+        query: target_condition,
+        rolled_groups,
+        replay_counts,
+    })
 }
 
 fn resolve_query(ctx: &EvalContext, query: &RangeQuery) -> Result<ResolvedQuery, Error> {

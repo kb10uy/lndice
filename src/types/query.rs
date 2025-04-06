@@ -30,4 +30,15 @@ impl ResolvedQuery {
             QueryKind::NotEqual => value != self.1,
         }
     }
+
+    pub fn passes_all(&self, faces: i64) -> bool {
+        match self.0 {
+            QueryKind::GreaterEqual => self.1 <= 1,
+            QueryKind::Greater => self.1 < 1,
+            QueryKind::Lesser => self.1 > faces,
+            QueryKind::LesserEqual => self.1 >= faces,
+            QueryKind::Equal => faces == 1 && self.1 == 1,
+            QueryKind::NotEqual => !(1..=faces).contains(&self.1),
+        }
+    }
 }
