@@ -1,35 +1,31 @@
 use std::env::args;
 
 use ariadne::{Color, Label, Report, ReportKind, Source};
-use lndice::parser::parse_command;
+use lndice::parser::{ErrorElement, parse};
 
 fn main() {
     let Some(source) = args().nth(1) else {
         return;
     };
 
-    match parse_command(&source) {
-        Ok(command) => {
+    match parse(&source) {
+        Ok(expr) => {
             println!("Parsed:");
-            println!("{command:?}");
+            println!("{expr:?}");
         }
         Err(errs) => {
+            let report_source = Source::from(&source);
             for err in errs {
-                let report = Report::build(ReportKind::Error, err.span().into_range())
-                    .with_message(err.to_string())
-                    .with_label(
-                        Label::new(err.span().into_range())
-                            .with_message(err.reason().to_string())
-                            .with_color(Color::Red),
-                    )
-                    .with_labels(err.contexts().map(|(label, span)| {
-                        Label::new(span.into_range())
-                            .with_message(format!("while parsing {label}"))
-                            .with_color(Color::Yellow)
-                    }))
-                    .finish();
-                report.eprint(Source::from(&source)).expect("failed to print errors");
+                let report = make_report(err);
+                report.eprint(report_source.clone()).expect("failed to print errors");
             }
         }
     }
+}
+
+fn make_report(ee: ErrorElement) -> Report<'static> {
+    Report::build(ReportKind::Error, ee.span.clone())
+        .with_message(ee.message)
+        .with_label(Label::new(ee.span).with_message(ee.reason).with_color(Color::Red))
+        .finish()
 }

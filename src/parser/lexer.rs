@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter, Result as FmtResult};
+
 use chumsky::prelude::*;
 
 pub type SpannedToken<'a> = (Token<'a>, SimpleSpan);
@@ -8,6 +10,17 @@ pub enum Token<'a> {
     Identifier(&'a str),
     Parens(char),
     Operator(&'a str),
+}
+
+impl Display for Token<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
+            Token::Integer(n) => write!(f, "{n}"),
+            Token::Identifier(id) => write!(f, "{id}"),
+            Token::Parens(p) => write!(f, "{p}"),
+            Token::Operator(op) => write!(f, "{op}"),
+        }
+    }
 }
 
 pub fn lex_tokens<'a>() -> impl Parser<'a, &'a str, Vec<SpannedToken<'a>>, extra::Err<Rich<'a, char>>> + Clone {
