@@ -61,11 +61,11 @@ where
             })
             .boxed(),
             infix(left(1), op("+"), |lhs, _, rhs, e| {
-                (AstExpr::binary(AstBinaryOperation::Divide, lhs, rhs), e.span())
+                (AstExpr::binary(AstBinaryOperation::Add, lhs, rhs), e.span())
             })
             .boxed(),
             infix(left(1), op("-"), |lhs, _, rhs, e| {
-                (AstExpr::binary(AstBinaryOperation::Divide, lhs, rhs), e.span())
+                (AstExpr::binary(AstBinaryOperation::Subtract, lhs, rhs), e.span())
             })
             .boxed(),
         ])
