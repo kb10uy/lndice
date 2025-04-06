@@ -54,6 +54,7 @@ fn operator<'a>() -> impl Parser<'a, &'a str, Token<'a>, extra::Err<Rich<'a, cha
         just("*"),
         just("/"),
         just("#"),
+        just(","),
     ))
     .labelled("operator")
     .map(Token::Operator)
