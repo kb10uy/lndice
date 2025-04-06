@@ -6,7 +6,9 @@ use chumsky::{
 use crate::types::constexpr::{ConstExpr, FractionMode};
 
 pub(super) fn term<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> + Clone {
-    int().or(expr().delimited_by(just('('), just(')')))
+    (int().labelled("integer")).or(expr()
+        .delimited_by(just('('), just(')'))
+        .labelled("parenthesized expression"))
 }
 
 pub(super) fn expr<'a>() -> impl Parser<'a, &'a str, ConstExpr, extra::Err<Rich<'a, char>>> + Clone {

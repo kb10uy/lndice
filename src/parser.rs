@@ -2,7 +2,6 @@ mod choice;
 mod constexpr;
 mod dice;
 mod query;
-mod repeat;
 
 use chumsky::prelude::*;
 

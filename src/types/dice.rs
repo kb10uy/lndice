@@ -40,7 +40,10 @@ pub enum SumDicePick {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IndividualDice(pub DiceElement);
+pub struct IndividualDice {
+    pub elements: Vec<DiceElement>,
+    pub target_query: Option<RangeQuery>,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ReplayDice {
