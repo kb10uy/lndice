@@ -1,9 +1,16 @@
 use rand::{Rng, distr::Uniform};
 
 use crate::{
-    eval::{EvalContext, constexpr::eval_constexpr, error::Error, roll::SumDiceRoll},
-    types::dice::{SumDiceElement, SumDicePick},
+    eval::{
+        EvalContext,
+        constexpr::eval_constexpr,
+        error::Error,
+        roll::{IndividualDiceRoll, SumDiceRoll},
+    },
+    types::dice::{DiceElement, ReplayDice, SumDiceElement, SumDicePick},
 };
+
+use super::roll::ReplayDiceRoll;
 
 pub fn eval_sum_dice_element<R: Rng + ?Sized>(
     ctx: &EvalContext,
@@ -44,6 +51,33 @@ pub fn eval_sum_dice_element<R: Rng + ?Sized>(
     })
 }
 
+pub fn eval_individual_dice_element<R: Rng + ?Sized>(
+    ctx: &EvalContext,
+    rng: &mut R,
+    dice: &DiceElement,
+) -> Result<IndividualDiceRoll, Error> {
+    let rolls_count = eval_constexpr(ctx, &dice.rolls)? as usize;
+    let faces_count = eval_constexpr(ctx, &dice.faces)? as i64;
+    if rolls_count == 0 || faces_count <= 0 {
+        return Err(Error::CountMustBePositive);
+    }
+
+    let distr = Uniform::new(1, faces_count + 1).map_err(|_| Error::InvalidDice)?;
+    let rolls: Vec<_> = rng.sample_iter(&distr).take(rolls_count).collect();
+
+    Ok(IndividualDiceRoll {
+        rolled_dice: rolls.into(),
+    })
+}
+
+pub fn eval_replay_dice<R: Rng + ?Sized>(
+    ctx: &EvalContext,
+    rng: &mut R,
+    dice: &ReplayDice,
+) -> Result<ReplayDiceRoll, Error> {
+    todo!();
+}
+
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -76,82 +110,44 @@ mod test {
     }
 
     #[rstest]
-    fn eval_sum_dice_element_works_basic(ctx: EvalContext, mut rng: impl Rng, dice_6_6: DiceElement) {
+    fn eval_sum_dice_element_works(ctx: EvalContext, mut rng: impl Rng, dice_6_6: DiceElement) {
+        let sde = |pick| SumDiceElement {
+            element: dice_6_6.clone(),
+            pick,
+        };
+
         assert_eq!(
-            eval_sum_dice_element(
-                &ctx,
-                &mut rng,
-                &SumDiceElement {
-                    element: dice_6_6,
-                    pick: None,
-                },
-            ),
+            eval_sum_dice_element(&ctx, &mut rng, &sde(None)),
             Ok(SumDiceRoll {
                 rolled_dice: vec![3, 6, 2, 5, 2, 4].into(),
                 effective_count: 6,
             })
         );
-    }
-
-    #[rstest]
-    fn eval_sum_dice_element_works_keep(ctx: EvalContext, mut rng: impl Rng, dice_6_6: DiceElement) {
         assert_eq!(
-            eval_sum_dice_element(
-                &ctx,
-                &mut rng,
-                &SumDiceElement {
-                    element: dice_6_6.clone(),
-                    pick: Some(SumDicePick::KeepHighest(3.into())),
-                },
-            ),
+            eval_sum_dice_element(&ctx, &mut rng, &sde(Some(SumDicePick::KeepHighest(3.into())))),
             Ok(SumDiceRoll {
-                rolled_dice: vec![6, 5, 4, 3, 2, 2].into(),
+                rolled_dice: vec![6, 5, 3, 3, 2, 1].into(),
                 effective_count: 3,
             })
         );
         assert_eq!(
-            eval_sum_dice_element(
-                &ctx,
-                &mut rng,
-                &SumDiceElement {
-                    element: dice_6_6.clone(),
-                    pick: Some(SumDicePick::KeepLowest(3.into())),
-                },
-            ),
+            eval_sum_dice_element(&ctx, &mut rng, &sde(Some(SumDicePick::KeepLowest(3.into())))),
             Ok(SumDiceRoll {
-                rolled_dice: vec![1, 2, 3, 3, 5, 6].into(),
+                rolled_dice: vec![1, 3, 4, 4, 5, 6].into(),
                 effective_count: 3,
             })
         );
-    }
-
-    #[rstest]
-    fn eval_sum_dice_element_works_drop(ctx: EvalContext, mut rng: impl Rng, dice_6_6: DiceElement) {
         assert_eq!(
-            eval_sum_dice_element(
-                &ctx,
-                &mut rng,
-                &SumDiceElement {
-                    element: dice_6_6.clone(),
-                    pick: Some(SumDicePick::DropHighest(2.into())),
-                },
-            ),
+            eval_sum_dice_element(&ctx, &mut rng, &sde(Some(SumDicePick::DropHighest(2.into())))),
             Ok(SumDiceRoll {
-                rolled_dice: vec![2, 2, 3, 4, 5, 6].into(),
+                rolled_dice: vec![1, 2, 3, 4, 5, 6].into(),
                 effective_count: 4,
             })
         );
         assert_eq!(
-            eval_sum_dice_element(
-                &ctx,
-                &mut rng,
-                &SumDiceElement {
-                    element: dice_6_6.clone(),
-                    pick: Some(SumDicePick::DropLowest(2.into())),
-                },
-            ),
+            eval_sum_dice_element(&ctx, &mut rng, &sde(Some(SumDicePick::DropLowest(2.into())))),
             Ok(SumDiceRoll {
-                rolled_dice: vec![6, 5, 3, 3, 2, 1].into(),
+                rolled_dice: vec![6, 5, 4, 2, 1, 1].into(),
                 effective_count: 4,
             })
         );
