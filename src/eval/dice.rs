@@ -5,12 +5,13 @@ use crate::{
         EvalContext,
         constexpr::eval_constexpr,
         error::Error,
-        roll::{IndividualDiceRoll, SumDiceRoll},
+        roll::{IndividualDiceRoll, ReplayDiceRoll, SumDiceRoll},
     },
-    types::dice::{DiceElement, ReplayDice, SumDiceElement, SumDicePick},
+    types::{
+        dice::{DiceElement, ReplayDice, SumDiceElement, SumDicePick},
+        query::{RangeQuery, ResolvedQuery},
+    },
 };
-
-use super::roll::ReplayDiceRoll;
 
 pub fn eval_sum_dice_element<R: Rng + ?Sized>(
     ctx: &EvalContext,
@@ -75,7 +76,29 @@ pub fn eval_replay_dice<R: Rng + ?Sized>(
     rng: &mut R,
     dice: &ReplayDice,
 ) -> Result<ReplayDiceRoll, Error> {
+    let (replay, target) = match (&dice.replay_query, &dice.target_query) {
+        (Some(r), Some(t)) => {
+            let replay = resolve_query(ctx, r)?;
+            let target = resolve_query(ctx, r)?;
+            (replay, Some(target))
+        }
+        (None, Some(t)) => {
+            let target = resolve_query(ctx, t)?;
+            (target.clone(), Some(target))
+        }
+        (Some(r), None) => {
+            let replay = resolve_query(ctx, r)?;
+            (replay, ctx.default_replay_target.clone())
+        }
+        (None, None) => return Err(Error::NoConditionProvided),
+    };
+
     todo!();
+}
+
+fn resolve_query(ctx: &EvalContext, query: &RangeQuery) -> Result<ResolvedQuery, Error> {
+    let value = eval_constexpr(ctx, &query.value)? as i64;
+    Ok(ResolvedQuery(query.kind, value))
 }
 
 #[cfg(test)]

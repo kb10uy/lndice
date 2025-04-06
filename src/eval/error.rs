@@ -10,4 +10,7 @@ pub enum Error {
 
     #[error("dice is logically invalid")]
     InvalidDice,
+
+    #[error("no condition provided")]
+    NoConditionProvided,
 }

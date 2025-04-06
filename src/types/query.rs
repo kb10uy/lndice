@@ -15,3 +15,19 @@ pub enum QueryKind {
     Equal,
     NotEqual,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ResolvedQuery(pub QueryKind, pub i64);
+
+impl ResolvedQuery {
+    pub fn passes(&self, value: i64) -> bool {
+        match self.0 {
+            QueryKind::GreaterEqual => value >= self.1,
+            QueryKind::Greater => value > self.1,
+            QueryKind::Lesser => value < self.1,
+            QueryKind::LesserEqual => value <= self.1,
+            QueryKind::Equal => value == self.1,
+            QueryKind::NotEqual => value != self.1,
+        }
+    }
+}
