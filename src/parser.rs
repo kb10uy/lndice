@@ -28,10 +28,10 @@ fn command<'a>() -> impl Parser<'a, &'a str, Command, extra::Err<Rich<'a, char>>
             repeat_command,
             calculate_command,
             choice::choice_command().map(Command::Choice),
-            dice::sum_dice().map(Command::Sum),
-            dice::individual_dice().map(Command::Individual),
             dice::replay_dice().map(Command::Replay),
             dice::infinite_dice().map(Command::Infinite),
+            dice::sum_dice().map(Command::Sum),
+            dice::individual_dice().map(Command::Individual),
             dice::tally_dice().map(Command::Tally),
             dice::two_six_dice().map(Command::TwoSix),
         ))
