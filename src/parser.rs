@@ -14,7 +14,6 @@ pub fn parse(source: &str) -> Result<Expr, Vec<ErrorElement>> {
         let lexer_errors: Vec<_> = errs.into_iter().map(ErrorElement::from_rich).collect();
         lexer_errors
     })?;
-    println!("{lexer_tokens:?}");
 
     let mapped_tokens = lexer_tokens.map((length..length).into(), |(t, s)| (t, s));
     let (ast_expr, _) = expr::expr().parse(mapped_tokens).into_result().map_err(|errs| {
