@@ -29,7 +29,12 @@ fn integer<'a>() -> impl Parser<'a, &'a str, Token<'a>, extra::Err<Rich<'a, char
 }
 
 fn identifier<'a>() -> impl Parser<'a, &'a str, Token<'a>, extra::Err<Rich<'a, char>>> + Clone {
-    text::ascii::ident().labelled("identifier").map(Token::Identifier)
+    any()
+        .filter(|c: &char| c.is_alphabetic())
+        .repeated()
+        .at_least(1)
+        .to_slice()
+        .map(Token::Identifier)
 }
 
 fn parens<'a>() -> impl Parser<'a, &'a str, Token<'a>, extra::Err<Rich<'a, char>>> + Clone {
@@ -56,21 +61,63 @@ fn operator<'a>() -> impl Parser<'a, &'a str, Token<'a>, extra::Err<Rich<'a, cha
 
 #[cfg(test)]
 mod test {
-    use chumsky::Parser;
+    use chumsky::{Parser, error::Rich};
     use pretty_assertions::assert_eq;
 
-    use super::{SpannedToken, Token, lex_tokens};
+    use super::{Token, lex_tokens};
 
-    fn take_tokens(tokens: Vec<SpannedToken>) -> Vec<Token<'_>> {
-        tokens.into_iter().map(|(t, _)| t).collect()
+    fn split_tokens(source: &str) -> Result<Vec<Token<'_>>, Vec<Rich<char>>> {
+        lex_tokens()
+            .parse(source)
+            .into_result()
+            .map(|t| t.into_iter().map(|(t, _)| t).collect())
     }
 
     #[test]
     fn lexer_splits_basic() {
-        let lexer = lex_tokens();
         assert_eq!(
-            lexer.parse("1 23 456").into_result().map(take_tokens),
-            Ok(vec![Token::Integer(1), Token::Integer(23), Token::Integer(456)])
+            split_tokens("1 23 456 a bc def"),
+            Ok(vec![
+                Token::Integer(1),
+                Token::Integer(23),
+                Token::Integer(456),
+                Token::Identifier("a"),
+                Token::Identifier("bc"),
+                Token::Identifier("def"),
+            ])
+        );
+    }
+
+    #[test]
+    fn lexer_splits_compact() {
+        assert_eq!(
+            split_tokens("1a23bc456def"),
+            Ok(vec![
+                Token::Integer(1),
+                Token::Identifier("a"),
+                Token::Integer(23),
+                Token::Identifier("bc"),
+                Token::Integer(456),
+                Token::Identifier("def"),
+            ])
+        );
+    }
+
+    #[test]
+    fn lexer_splits_operators() {
+        assert_eq!(
+            split_tokens("1+2*3-4/5"),
+            Ok(vec![
+                Token::Integer(1),
+                Token::Operator("+"),
+                Token::Integer(2),
+                Token::Operator("*"),
+                Token::Integer(3),
+                Token::Operator("-"),
+                Token::Integer(4),
+                Token::Operator("/"),
+                Token::Integer(5),
+            ])
         );
     }
 }
